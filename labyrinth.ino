@@ -16,8 +16,6 @@ extern "C" {
 extern int xchOledMax; 
 extern int ychOledMax; 
 
-//char	chSwtCur;
-//char	chSwtPrev;
 bool	fClearOled;
 
 int	xcoBallStart 	= 64;

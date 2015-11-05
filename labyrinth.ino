@@ -21,20 +21,50 @@ bool	fClearOled;
 int	xcoBallStart 	= 64;
 int	ycoBallStart	= 16;
 
-int	xcoExhstStart	= 39;
-int	ycoExhstStart	= 11;
-
 int	cBallWidth 	= 6;
 int	cBallHeight 	= 4;
 
-int	cExhstWidth	= 9;
-int	cExhstHeight	= 16;
+int     xcoWallTopStart    = 0;
+int     ycoWallTopStart    = 0;
 
-int	fExhstSwt	= 0;
+int     xcoWallBottomStart = 0;
+int     ycoWallBottomStart = 30;
+
+int     cWallTopWidth   = 160;
+int     cWallTopHeight  = 1;
+
+int     xcoWallLeftStart    = 0;
+int     ycoWallLeftStart    = 0;
+
+int     xcoWallRightStart = 126;
+int     ycoWallRightStart = 0;
+
+int     cWallSideWidth   = 1;
+int     cWallSideHeight  = 30;
 
 char	rgBMPBall[] = {
   0xFF, 0xFF,
-  0xFF, 0xFF
+  0xFF, 0xFF,
+};
+
+char   rgBMPWallTop[] = {
+   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+   0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+};
+
+char	rgBMPWallSide[] = {
+  0xFF, 0xFF,
+  0xFF, 0xFF,
+  0xFF, 0xFF,
+  0xFF, 0xFF,
+  0xFF, 0xFF,
+  0xFF, 0xFF,
 };
 
 void DeviceInit();
@@ -147,13 +177,25 @@ void Labyrinth() {
     I2CGenTransmit(rgchWriteAccl, 1, WRITE, ACCLADDR);
 
   }
-
+  
   OrbitOledMoveTo(xcoBallStart, ycoBallStart);
   OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
 
   OrbitOledUpdate();
 
   while(1) {
+    
+    OrbitOledMoveTo(xcoWallTopStart, ycoWallTopStart);
+    OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+    
+    OrbitOledMoveTo(xcoWallBottomStart, ycoWallBottomStart);
+    OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+    
+    OrbitOledMoveTo(xcoWallLeftStart, ycoWallLeftStart);
+    OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+    
+    OrbitOledMoveTo(xcoWallRightStart, ycoWallRightStart);
+    OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
 
     rgchReadAccl[0] = chX0Addr;
     I2CGenTransmit(rgchReadAccl, 2, READ, ACCLADDR);
@@ -201,19 +243,44 @@ void Labyrinth() {
 void BallRight(int xcoUpdate, int ycoUpdate) {
   
   OrbitOledClear();
+  
+  OrbitOledMoveTo(xcoWallTopStart, ycoWallTopStart);
+  OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+  
+  OrbitOledMoveTo(xcoWallBottomStart, ycoWallBottomStart);
+  OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+  
+  OrbitOledMoveTo(xcoWallLeftStart, ycoWallLeftStart);
+  OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+    
+  OrbitOledMoveTo(xcoWallRightStart, ycoWallRightStart);
+  OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+  
   OrbitOledMoveTo(xcoUpdate, ycoUpdate);
   OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
-
-  OrbitOledMoveTo(xcoUpdate, ycoUpdate);
+  OrbitOledMoveTo(xcoUpdate - cBallWidth, ycoUpdate);
 
   OrbitOledUpdate();
 }
 
 void BallLeft(int xcoUpdate, int ycoUpdate) {
+  
   OrbitOledClear();
+  
+  OrbitOledMoveTo(xcoWallTopStart, ycoWallTopStart);
+  OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+  
+  OrbitOledMoveTo(xcoWallBottomStart, ycoWallBottomStart);
+  OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+  
+  OrbitOledMoveTo(xcoWallLeftStart, ycoWallLeftStart);
+  OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+    
+  OrbitOledMoveTo(xcoWallRightStart, ycoWallRightStart);
+  OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+  
   OrbitOledMoveTo(xcoUpdate, ycoUpdate);
   OrbitOledPutBmpFlipped(cBallWidth, cBallHeight, rgBMPBall);
-
   OrbitOledMoveTo(xcoUpdate + cBallWidth, ycoUpdate);
 
   OrbitOledUpdate();

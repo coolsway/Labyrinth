@@ -1,4 +1,5 @@
 extern "C" {
+<<<<<<< HEAD:labyrinth/labyrinth.ino
   #include <delay.h>
   #include <FillPat.h>
   #include <I2CEEPROM.h>
@@ -8,6 +9,16 @@ extern "C" {
   #include <OrbitOledChar.h>
   #include <OrbitOledGrph.h>
   #include "functions.h"
+=======
+#include <delay.h>
+#include <FillPat.h>
+#include <I2CEEPROM.h>
+#include <LaunchPad.h>
+#include <OrbitBoosterPackDefs.h>
+#include <OrbitOled.h>
+#include <OrbitOledChar.h>
+#include <OrbitOledGrph.h>
+>>>>>>> parent of 4337806... Fixed square clipping bug:labyrinth.ino
 }
 
 #define RED_LED   GPIO_PIN_1
@@ -30,6 +41,9 @@ int	ycoExhstStart	= 11;
 
 int	cBallWidth 	= 6;
 int	cBallHeight 	= 4;
+
+int	cExhstWidth	= 9;
+int	cExhstHeight	= 16;
 
 int	fExhstSwt	= 0;
 
@@ -92,12 +106,12 @@ void DeviceInit()
 {
   SysCtlClockSet(SYSCTL_OSC_MAIN | SYSCTL_XTAL_16MHZ | SYSCTL_USE_PLL | SYSCTL_SYSDIV_4);
 
-  SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOA );
-  SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOB );
-  SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOC );
-  SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOD );
-  SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOE );
-  SysCtlPeripheralEnable( SYSCTL_PERIPH_GPIOF );
+  SysCtlPeripheralEnable(	SYSCTL_PERIPH_GPIOA );
+  SysCtlPeripheralEnable(	SYSCTL_PERIPH_GPIOB );
+  SysCtlPeripheralEnable(	SYSCTL_PERIPH_GPIOC );
+  SysCtlPeripheralEnable(	SYSCTL_PERIPH_GPIOD );
+  SysCtlPeripheralEnable(	SYSCTL_PERIPH_GPIOE );
+  SysCtlPeripheralEnable(	SYSCTL_PERIPH_GPIOF );
 
   GPIOPadConfigSet(SWTPort, SWT1 | SWT2, GPIO_STRENGTH_2MA, GPIO_PIN_TYPE_STD_WPD);
 
@@ -228,6 +242,7 @@ void Labyrinth() {
 }
 
 void BallRight(int xcoUpdate, int ycoUpdate) {
+  
   OrbitOledClear();
   OrbitOledMoveTo(xcoUpdate, ycoUpdate);
   OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
@@ -249,9 +264,9 @@ void BallLeft(int xcoUpdate, int ycoUpdate) {
 
 void BallStop(int xcoUpdate, int ycoUpdate, bool fDir) {
   if(fDir) {
-    OrbitOledMoveTo(xcoUpdate - cBallWidth, ycoUpdate);
+    OrbitOledMoveTo(xcoUpdate, ycoUpdate);
     OrbitOledSetFillPattern(OrbitOledGetStdPattern(0));
-    OrbitOledFillRect(xcoUpdate - cBallWidth, ycoUpdate);
+    OrbitOledFillRect(xcoUpdate - 1, ycoUpdate);
   }
   else {
     OrbitOledMoveTo(xcoUpdate + cBallWidth, ycoUpdate);
@@ -369,3 +384,9 @@ bool I2CGenIsNotIdle() {
   return !I2CMasterBusBusy(I2C0_BASE);
 
 }
+
+
+
+
+
+

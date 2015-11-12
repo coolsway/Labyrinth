@@ -24,7 +24,6 @@ int	ycoBallStart	= 16;
 int	cBallWidth 	= 4;
 int	cBallHeight 	= 4;
 
-<<<<<<< HEAD
 int     xcoWallTopStart    = 0;
 int     ycoWallTopStart    = 0;
 
@@ -43,8 +42,6 @@ int     ycoWallRightStart = 0;
 int     cWallSideWidth   = 1;
 int     cWallSideHeight  = 30;
 
-=======
->>>>>>> origin/movement
 char	rgBMPBall[] = {
   0xFF, 0xFF,
   0xFF, 0xFF
@@ -201,7 +198,7 @@ void Labyrinth() {
     
     OrbitOledMoveTo(xcoWallLeftStart, ycoWallLeftStart);
     OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
-    
+      
     OrbitOledMoveTo(xcoWallRightStart, ycoWallRightStart);
     OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
 
@@ -217,11 +214,7 @@ void Labyrinth() {
     if(dataX < 0 && dataX < xDirThreshNeg) {
       fDir = true;
 
-<<<<<<< HEAD
-      if(xcoBallCur >= (ccolOledMax)) {
-=======
       if(xcoBallCur >= ccolOledMax) {
->>>>>>> origin/movement
         xcoBallCur = 0;
 
         OrbitOledClear();
@@ -249,13 +242,11 @@ void Labyrinth() {
         xcoBallCur--;
       }
 
+      if (xcoBallCur < 2) xcoBallCur = 2;
+      
       BallLeft(xcoBallCur, ycoBallCur);
     }
     
-<<<<<<< HEAD
-    if (xcoBallCur < 2) xcoBallCur = 2;
-    
-=======
     else if(dataY > 0 && dataY > yDirThreshPos) {
       fDirY = true;
       
@@ -266,6 +257,8 @@ void Labyrinth() {
       }else{
         ycoBallCur++;
       }
+      
+      if (ycoBallCur > 26) ycoBallCur = 26;
       
       BallDown(xcoBallCur, ycoBallCur);
     }
@@ -280,11 +273,12 @@ void Labyrinth() {
       }else{
         ycoBallCur--;
       }
-
+  
+      if (ycoBallCur < 2) ycoBallCur = 2;
+      
       BallUp(xcoBallCur, ycoBallCur);
     }
 
->>>>>>> origin/movement
     else {
       BallStop(xcoBallCur, ycoBallCur, fDir);
     }
@@ -338,6 +332,19 @@ void BallLeft(int xcoUpdate, int ycoUpdate) {
 
 void BallDown(int xcoUpdate, int ycoUpdate) {
   OrbitOledClear();
+  
+  OrbitOledMoveTo(xcoWallTopStart, ycoWallTopStart);
+  OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+  
+  OrbitOledMoveTo(xcoWallBottomStart, ycoWallBottomStart);
+  OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+  
+  OrbitOledMoveTo(xcoWallLeftStart, ycoWallLeftStart);
+  OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+    
+  OrbitOledMoveTo(xcoWallRightStart, ycoWallRightStart);
+  OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+  
   OrbitOledMoveTo(xcoUpdate, ycoUpdate);
   OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
 
@@ -348,6 +355,19 @@ void BallDown(int xcoUpdate, int ycoUpdate) {
 
 void BallUp(int xcoUpdate, int ycoUpdate) {
   OrbitOledClear();
+  
+  OrbitOledMoveTo(xcoWallTopStart, ycoWallTopStart);
+  OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+  
+  OrbitOledMoveTo(xcoWallBottomStart, ycoWallBottomStart);
+  OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
+  
+  OrbitOledMoveTo(xcoWallLeftStart, ycoWallLeftStart);
+  OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+    
+  OrbitOledMoveTo(xcoWallRightStart, ycoWallRightStart);
+  OrbitOledPutBmp(cWallSideWidth, cWallSideHeight, rgBMPWallSide);
+  
   OrbitOledMoveTo(xcoUpdate, ycoUpdate);
   OrbitOledPutBmpFlipped(cBallWidth, cBallHeight, rgBMPBall);
 

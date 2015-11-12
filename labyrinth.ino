@@ -21,13 +21,8 @@ bool	fClearOled;
 int	xcoBallStart 	= 64;
 int	ycoBallStart	= 16;
 
-int	xcoExhstStart	= 39;
-int	ycoExhstStart	= 11;
-
-int	cBallWidth 	= 6;
+int	cBallWidth 	= 4;
 int	cBallHeight 	= 4;
-
-int	fExhstSwt	= 0;
 
 char	rgBMPBall[] = {
   0xFF, 0xFF,
@@ -104,22 +99,27 @@ void DeviceInit()
 void Labyrinth() {
 
   short	dataX;
+  short dataY;
 
   char 	chPwrCtlReg = 0x2D;
   char 	chX0Addr = 0x32;
+  char  chY0Addr = 0x34;
 
-  char 	rgchReadAccl[] = {
-    0, 0, 0            };
-  char 	rgchWriteAccl[] = {
-    0, 0            };
+  char 	rgchReadAccl[] = {0, 0, 0};
+  char  rgchReadAcclY[] = {0, 0, 0};
+  char 	rgchWriteAccl[] = {0, 0};
 
   int	xcoBallCur = xcoBallStart;
   int 	ycoBallCur = ycoBallStart;
 
-  int		xDirThreshPos = 50;
-  int		xDirThreshNeg = -50;
+  int	xDirThreshPos = 50;
+  int	xDirThreshNeg = -50;
+  
+  int   yDirThreshPos = 110;
+  int   yDirThreshNeg = -110;
 
   bool fDir = true;
+  bool fDirY = true;
 
   if(fClearOled == true) {
     OrbitOledClear();
@@ -153,14 +153,18 @@ void Labyrinth() {
   while(1) {
 
     rgchReadAccl[0] = chX0Addr;
+    rgchReadAcclY[0] = chY0Addr;
+    
     I2CGenTransmit(rgchReadAccl, 2, READ, ACCLADDR);
+    I2CGenTransmit(rgchReadAcclY, 2, READ, ACCLADDR);
 
     dataX = (rgchReadAccl[2] << 8) | rgchReadAccl[1];
+    dataY = (rgchReadAcclY[2] << 8) | rgchReadAcclY[1];
 
     if(dataX < 0 && dataX < xDirThreshNeg) {
       fDir = true;
 
-      if(xcoBallCur >= (ccolOledMax - 32)) {
+      if(xcoBallCur >= ccolOledMax) {
         xcoBallCur = 0;
 
         OrbitOledClear();
@@ -177,7 +181,7 @@ void Labyrinth() {
       fDir = false;
 
       if(xcoBallCur <= 0) {
-        xcoBallCur = ccolOledMax - 32;
+        xcoBallCur = ccolOledMax;
 
         OrbitOledClear();
       }
@@ -187,6 +191,34 @@ void Labyrinth() {
       }
 
       BallLeft(xcoBallCur, ycoBallCur);
+    }
+    
+    else if(dataY > 0 && dataY > yDirThreshPos) {
+      fDirY = true;
+      
+      if (ycoBallCur >= crowOledMax-4){
+        ycoBallCur = 0;
+        
+        OrbitOledClear();
+      }else{
+        ycoBallCur++;
+      }
+      
+      BallDown(xcoBallCur, ycoBallCur);
+    }
+    
+    else if(dataY < 0 && dataY < yDirThreshPos) {
+      fDirY = false;
+      
+      if(ycoBallCur <= 0) {
+        ycoBallCur = crowOledMax - 4;
+
+        OrbitOledClear();
+      }else{
+        ycoBallCur--;
+      }
+
+      BallUp(xcoBallCur, ycoBallCur);
     }
 
     else {
@@ -211,6 +243,26 @@ void BallLeft(int xcoUpdate, int ycoUpdate) {
   OrbitOledPutBmpFlipped(cBallWidth, cBallHeight, rgBMPBall);
 
   OrbitOledMoveTo(xcoUpdate + cBallWidth, ycoUpdate);
+
+  OrbitOledUpdate();
+}
+
+void BallDown(int xcoUpdate, int ycoUpdate) {
+  OrbitOledClear();
+  OrbitOledMoveTo(xcoUpdate, ycoUpdate);
+  OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
+
+  OrbitOledMoveTo(xcoUpdate, ycoUpdate);
+
+  OrbitOledUpdate();
+}
+
+void BallUp(int xcoUpdate, int ycoUpdate) {
+  OrbitOledClear();
+  OrbitOledMoveTo(xcoUpdate, ycoUpdate);
+  OrbitOledPutBmpFlipped(cBallWidth, cBallHeight, rgBMPBall);
+
+  OrbitOledMoveTo(xcoUpdate, ycoUpdate-cBallHeight);
 
   OrbitOledUpdate();
 }

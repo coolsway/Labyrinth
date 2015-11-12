@@ -214,7 +214,9 @@ void Labyrinth() {
       else {
         xcoBallCur++;
       }
-
+      
+      if (xcoBallCur > 122) xcoBallCur = 122;
+    
       BallRight(xcoBallCur, ycoBallCur);
     }
 
@@ -233,7 +235,9 @@ void Labyrinth() {
 
       BallLeft(xcoBallCur, ycoBallCur);
     }
-
+    
+    if (xcoBallCur < 2) xcoBallCur = 2;
+    
     else {
       BallStop(xcoBallCur, ycoBallCur, fDir);
     }

@@ -7,6 +7,7 @@ extern "C" {
   #include <OrbitOled.h>
   #include <OrbitOledChar.h>
   #include <OrbitOledGrph.h>
+  #include "functions.h"
 }
 
 #define RED_LED   GPIO_PIN_1
@@ -15,7 +16,10 @@ extern "C" {
 
 extern int xchOledMax; 
 extern int ychOledMax; 
-
+const unsigned int bitmapHeight =7;  // The height of the bitmap we're about to create
+const unsigned int bitmapWidth = 10;   // The width of the bitmap we're about to create
+unsigned int x = 0;
+unsigned int y = 0;
 bool	fClearOled;
 
 int	xcoBallStart 	= 64;
@@ -30,8 +34,13 @@ int	cBallHeight 	= 4;
 int	fExhstSwt	= 0;
 
 char	rgBMPBall[] = {
-  0xFF, 0xFF,
-  0xFF, 0xFF
+  {1, 0, 0, 1, 0, 1, 1, 1, 1, 1},
+  {1, 0, 1, 0, 0, 1, 0, 0, 0, 0},
+  {1, 1, 0, 0, 0, 1, 0, 0, 0, 0},
+  {1, 0, 0, 0, 0, 1, 1, 1, 1, 1},
+  {1, 1, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 1, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 1, 0, 1, 1, 1, 1, 1}
 };
 
 void DeviceInit();
@@ -50,10 +59,33 @@ void setup()
 {
   DeviceInit();
 }
+char* formattedBitmap(char* input, unsigned int width, unsigned int height)
+{
+  
+  unsigned int h = ceil(height / 8.0);
+  char *output = (char*)calloc(h * width, sizeof(char));
+  char b, temp;
+  for (unsigned int hbyte = 0; hbyte < h; ++hbyte) {
+    for (unsigned int i = 0; i < width; ++i) {
+      b = 0;
+      for (unsigned int j = 0; j < ((height - hbyte * 8)/8 ? 8 : (height%8)); ++j) {
+        temp = input[(8*hbyte+j)*width+i];
+        if (temp) b |= 1 << j;
+      }
+
+      output[hbyte*width+i]|=b;
+    }
+  }
+  return output;
+}
+char* bitmap = formattedBitmap((char*)bmp, bitmapWidth, bitmapHeight);
 
 void loop()
 {
   Labyrinth();
+  oledDraw(bitmap, x, y, bitmapWidth, bitmapHeight);
+  OrbitOledUpdate();
+  oledReset();
 }
 
 void DeviceInit()

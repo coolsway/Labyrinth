@@ -21,7 +21,7 @@ bool	fClearOled;
 int	xcoBallStart 	= 64;
 int	ycoBallStart	= 16;
 
-int	cBallWidth 	= 6;
+int	cBallWidth 	= 4;
 int	cBallHeight 	= 4;
 
 int     xcoWallTopStart    = 0;

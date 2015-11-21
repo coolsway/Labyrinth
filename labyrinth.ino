@@ -21,17 +21,23 @@ bool	fClearOled;
 int	xcoBallStart 	= 64;
 int	ycoBallStart	= 16;
 
-int	xcoExhstStart	= 39;
-int	ycoExhstStart	= 11;
-
-int	cBallWidth 	= 6;
+int	cBallWidth 	= 4;
 int	cBallHeight 	= 4;
-
-int	fExhstSwt	= 0;
 
 char	rgBMPBall[] = {
   0xFF, 0xFF,
   0xFF, 0xFF
+};
+
+int maze[][32] = {
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  {1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1},
+  {1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
 void DeviceInit();
@@ -101,25 +107,96 @@ void DeviceInit()
 
 }
 
+char *createBMP (int width, int height, int **data){
+  
+  char *bmp = (char*)calloc(width*(height/8),sizeof(char));
+  
+  for (int k = 0; k < (height/8); k++){
+  
+    for (int i = 0; i < width; i++){
+      int val = 0;
+      int multiplier = 1;
+      
+      for (int j = 0; j < 8; j++){
+        if (data[j+k*8][i]) val += multiplier;
+        multiplier *= 2;
+      }
+      
+      bmp[i+k*width] = val;
+    }
+    
+  }
+  
+  return bmp;
+}
+
+int** expandMaze(int maze[][32]){
+  int **expandedMaze = (int**)malloc(32*sizeof(int));
+  
+  for (int i = 0; i < 8; i++){
+    expandedMaze[i*4] = (int*)calloc(128,sizeof(int));
+    expandedMaze[i*4+1] = (int*)calloc(128,sizeof(int));
+    expandedMaze[i*4+2] = (int*)calloc(128,sizeof(int));
+    expandedMaze[i*4+3] = (int*)calloc(128,sizeof(int));
+    
+    for (int j = 0; j < 32; j++){
+      if (maze[i][j] == 1){
+        expandedMaze[i*4][j*4] = 1;
+        expandedMaze[i*4][j*4+1] = 1;
+        expandedMaze[i*4][j*4+2] = 1;
+        expandedMaze[i*4][j*4+3] = 1;
+        
+        expandedMaze[i*4+1][j*4] = 1;
+        expandedMaze[i*4+1][j*4+1] = 1;
+        expandedMaze[i*4+1][j*4+2] = 1;
+        expandedMaze[i*4+1][j*4+3] = 1;
+        
+        expandedMaze[i*4+2][j*4] = 1;
+        expandedMaze[i*4+2][j*4+1] = 1;
+        expandedMaze[i*4+2][j*4+2] = 1;
+        expandedMaze[i*4+2][j*4+3] = 1;
+        
+        expandedMaze[i*4+3][j*4] = 1;
+        expandedMaze[i*4+3][j*4+1] = 1;
+        expandedMaze[i*4+3][j*4+2] = 1;
+        expandedMaze[i*4+3][j*4+3] = 1;
+        
+      }
+    }
+  }
+  
+  return expandedMaze;
+}
+
+int mazeWidth = 128;
+int mazeHeight = 32;
+
+char *finalMaze = createBMP(128,32,expandMaze(maze));
+
 void Labyrinth() {
 
   short	dataX;
+  short dataY;
 
   char 	chPwrCtlReg = 0x2D;
   char 	chX0Addr = 0x32;
+  char  chY0Addr = 0x34;
 
-  char 	rgchReadAccl[] = {
-    0, 0, 0            };
-  char 	rgchWriteAccl[] = {
-    0, 0            };
+  char 	rgchReadAccl[] = {0, 0, 0};
+  char  rgchReadAcclY[] = {0, 0, 0};
+  char 	rgchWriteAccl[] = {0, 0};
 
   int	xcoBallCur = xcoBallStart;
   int 	ycoBallCur = ycoBallStart;
 
-  int		xDirThreshPos = 50;
-  int		xDirThreshNeg = -50;
+  int	xDirThreshPos = 50;
+  int	xDirThreshNeg = -50;
+  
+  int   yDirThreshPos = 110;
+  int   yDirThreshNeg = -110;
 
   bool fDir = true;
+  bool fDirY = true;
 
   if(fClearOled == true) {
     OrbitOledClear();
@@ -144,6 +221,9 @@ void Labyrinth() {
     I2CGenTransmit(rgchWriteAccl, 1, WRITE, ACCLADDR);
 
   }
+  
+  OrbitOledMoveTo(0,0);
+  OrbitOledPutBmp(mazeWidth, mazeHeight, finalMaze);
 
   OrbitOledMoveTo(xcoBallStart, ycoBallStart);
   OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
@@ -153,14 +233,18 @@ void Labyrinth() {
   while(1) {
 
     rgchReadAccl[0] = chX0Addr;
+    rgchReadAcclY[0] = chY0Addr;
+    
     I2CGenTransmit(rgchReadAccl, 2, READ, ACCLADDR);
+    I2CGenTransmit(rgchReadAcclY, 2, READ, ACCLADDR);
 
     dataX = (rgchReadAccl[2] << 8) | rgchReadAccl[1];
+    dataY = (rgchReadAcclY[2] << 8) | rgchReadAcclY[1];
 
     if(dataX < 0 && dataX < xDirThreshNeg) {
       fDir = true;
 
-      if(xcoBallCur >= (ccolOledMax - 32)) {
+      if(xcoBallCur >= ccolOledMax) {
         xcoBallCur = 0;
 
         OrbitOledClear();
@@ -177,7 +261,7 @@ void Labyrinth() {
       fDir = false;
 
       if(xcoBallCur <= 0) {
-        xcoBallCur = ccolOledMax - 32;
+        xcoBallCur = ccolOledMax;
 
         OrbitOledClear();
       }
@@ -188,6 +272,34 @@ void Labyrinth() {
 
       BallLeft(xcoBallCur, ycoBallCur);
     }
+    
+    else if(dataY > 0 && dataY > yDirThreshPos) {
+      fDirY = true;
+      
+      if (ycoBallCur >= crowOledMax-4){
+        ycoBallCur = 0;
+        
+        OrbitOledClear();
+      }else{
+        ycoBallCur++;
+      }
+      
+      BallDown(xcoBallCur, ycoBallCur);
+    }
+    
+    else if(dataY < 0 && dataY < yDirThreshPos) {
+      fDirY = false;
+      
+      if(ycoBallCur <= 0) {
+        ycoBallCur = crowOledMax - 4;
+
+        OrbitOledClear();
+      }else{
+        ycoBallCur--;
+      }
+
+      BallUp(xcoBallCur, ycoBallCur);
+    }
 
     else {
       BallStop(xcoBallCur, ycoBallCur, fDir);
@@ -197,6 +309,10 @@ void Labyrinth() {
 
 void BallRight(int xcoUpdate, int ycoUpdate) {
   OrbitOledClear();
+  
+  OrbitOledMoveTo(0,0);
+  OrbitOledPutBmp(mazeWidth, mazeHeight, finalMaze);
+  
   OrbitOledMoveTo(xcoUpdate, ycoUpdate);
   OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
 
@@ -207,10 +323,42 @@ void BallRight(int xcoUpdate, int ycoUpdate) {
 
 void BallLeft(int xcoUpdate, int ycoUpdate) {
   OrbitOledClear();
+  
+  OrbitOledMoveTo(0,0);
+  OrbitOledPutBmp(mazeWidth, mazeHeight, finalMaze);
+  
   OrbitOledMoveTo(xcoUpdate, ycoUpdate);
   OrbitOledPutBmpFlipped(cBallWidth, cBallHeight, rgBMPBall);
 
   OrbitOledMoveTo(xcoUpdate + cBallWidth, ycoUpdate);
+
+  OrbitOledUpdate();
+}
+
+void BallDown(int xcoUpdate, int ycoUpdate) {
+  OrbitOledClear();
+  
+  OrbitOledMoveTo(0,0);
+  OrbitOledPutBmp(mazeWidth, mazeHeight, finalMaze);
+  
+  OrbitOledMoveTo(xcoUpdate, ycoUpdate);
+  OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
+
+  OrbitOledMoveTo(xcoUpdate, ycoUpdate);
+
+  OrbitOledUpdate();
+}
+
+void BallUp(int xcoUpdate, int ycoUpdate) {
+  OrbitOledClear();
+  
+  OrbitOledMoveTo(0,0);
+  OrbitOledPutBmp(mazeWidth, mazeHeight, finalMaze);
+  
+  OrbitOledMoveTo(xcoUpdate, ycoUpdate);
+  OrbitOledPutBmpFlipped(cBallWidth, cBallHeight, rgBMPBall);
+
+  OrbitOledMoveTo(xcoUpdate, ycoUpdate-cBallHeight);
 
   OrbitOledUpdate();
 }

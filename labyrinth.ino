@@ -217,7 +217,6 @@ void Labyrinth() {
       if(xcoBallCur >= ccolOledMax) {
         xcoBallCur = 0;
 
-        //OrbitOledClear();
       }
 
       else {
@@ -235,7 +234,6 @@ void Labyrinth() {
       if(xcoBallCur <= 0) {
         xcoBallCur = ccolOledMax;
 
-        //OrbitOledClear();
       }
 
       else {
@@ -253,7 +251,6 @@ void Labyrinth() {
       if (ycoBallCur >= crowOledMax-4){
         ycoBallCur = 0;
         
-        //OrbitOledClear();
       }else{
         ycoBallCur++;
       }
@@ -269,7 +266,6 @@ void Labyrinth() {
       if(ycoBallCur <= 0) {
         ycoBallCur = crowOledMax - 4;
 
-        //OrbitOledClear();
       }else{
         ycoBallCur--;
       }

@@ -284,14 +284,8 @@ void Labyrinth() {
     }
   }
 }
-<<<<<<< HEAD
-void displayWalls(){
-=======
 
-void BallRight(int xcoUpdate, int ycoUpdate) {
-  
-  OrbitOledClear();
->>>>>>> origin/collision-testing
+void displayWalls(){
  
   OrbitOledMoveTo(xcoWallTopStart, ycoWallTopStart);
   OrbitOledPutBmp(cWallTopWidth, cWallTopHeight, rgBMPWallTop);
@@ -322,7 +316,7 @@ void BallLeft(int xcoUpdate, int ycoUpdate) {
   
   OrbitOledClear();
   
-   displayWalls();
+  displayWalls();
   
   OrbitOledMoveTo(xcoUpdate, ycoUpdate);
   OrbitOledPutBmpFlipped(cBallWidth, cBallHeight, rgBMPBall);

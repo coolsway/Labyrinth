@@ -9,7 +9,7 @@ maze = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
 	    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-onesList = []
+openList = []
 
 def chooseStartIndex(maze):
 
@@ -44,55 +44,29 @@ def checkAdjacency(currentIndex, maze):
 
 def chooseNextIndex(maze, currentIndex):
 
-	nextIndex = currentIndex
-
-	while nextIndex == currentIndex or checkAdjacency(nextIndex, maze) == 0:
+	while True:
 
 		direc = random.randint(0,3)
 
-		if direc == 0 and currentIndex[0]-1 >= 0:				# UP
+		if direc == 0:				# UP
 			nextIndex = [currentIndex[0]-1, currentIndex[1]]
-		elif direc == 1 and currentIndex[0]+1 <= len(maze)-1:			# DOWN
+		elif direc == 1:			# DOWN
 			nextIndex = [currentIndex[0]+1, currentIndex[1]]
-		elif direc == 2 and currentIndex[1]-1 >= 0:			# LEFT
+		elif direc == 2:			# LEFT
 			nextIndex = [currentIndex[0], currentIndex[1]-1]
-		elif direc == 3 and currentIndex[1]+1 <= len(maze[0])-1:			# RIGHT
+		elif direc == 3:			# RIGHT
 			nextIndex = [currentIndex[0], currentIndex[1]+1]
 
-		#if (nextIndex[0] >= 0 and nextIndex[0] <= len(maze)-1) and (nextIndex[1] >= 0 and nextIndex[1] <= len(maze[0])-1) and maze[nextIndex[0]][nextIndex[1]] != 1:
-			#break
+		if (nextIndex[0] >= 0 and nextIndex[0] <= len(maze)-1) and (nextIndex[1] >= 0 and nextIndex[1] <= len(maze[0])-1) and maze[nextIndex[0]][nextIndex[1]] != 1:
+			break
 				
 	return nextIndex
 
-def returnOpenBlocks(onesList, maze, direc):
+# def sweepOpenList(openList, maze):
 
-	openBlocksList = onesList
-
-	if direc == 0:						# MOVE EVERY BLOCK UP
-		for index in openBlocksList:
-			if index[1] < len(maze)-1:
-				index[1] += 1
-
-	elif direc == 1:						# MOVE EVERY BLOCK DOWN
-		for index in openBlocksList:
-			if index[1] > 0:
-				index[1] -= 1
-
-	elif direc == 2:						# MOVE EVERY BLOCK LEFT
-		for index in openBlocksList:
-			if index[0] < len(maze[0])-1:
-				index[0] += 1
-
-	elif direc == 3:						# MOVE EVERY BLOCK RIGHT
-		for index in openBlocksList:
-			if index[0] > 0:
-				index[0] -= 1
-
-	for index in openBlocksList:
-		if checkAdjacency(index, maze) == 0:
-			openBlocksList.remove(index)
-
-	return openBlocksList
+# 	for index in openList:
+# 		if checkAdjacency(index, maze) == 0:
+# 			openList.remove(index)
 	
 def generateMaze(maze, index):
 
@@ -104,20 +78,15 @@ def generateMaze(maze, index):
 	if checkAdjacency(nextIndex, maze):
 
 		maze[nextIndex[0]][nextIndex[1]] = 1
-		onesList.append(nextIndex)
+		openList.append(nextIndex)
 
 		# deadEnd = random.randint(0,9) 		#10 % dead end chance
 		# if deadEnd == 1:
-		# # 	#print "dead", nextIndex
-		# # 	#randomly choose an unvisited block that is adjacent to only one visited block
-		# # 	# sweeponesList(onesList, maze)
-		# 	nextDir = random.randint(0,3)
-		# 	openBlocksList = returnOpenBlocks(onesList, maze, nextDir)
-		# 	randIndex = random.randint(0,len(openBlocksList)-1)
-		# 	nextIndex = openBlocksList[randIndex]
-		# 	maze[nextIndex[0]][nextIndex[1]] = 1
-		# 	onesList.append(startIndex)
-			# nextIndex = chooseNextIndex(maze, index)
+		# 	#print "dead", nextIndex
+		# 	#randomly choose an unvisited block that is adjacent to only one visited block
+		# 	# sweepOpenList(openList, maze)
+		# 	randIndex = random.randint(0,len(openList)-1)
+		# 	nextIndex = openList[randIndex]
 			#print "new", nextIndex
 
 		generateMaze(maze, nextIndex)
@@ -133,23 +102,13 @@ def main():
 
 	startIndex = chooseStartIndex(maze)
 	maze[startIndex[0]][startIndex[1]] = 1
-	onesList.append(startIndex)
+	openList.append(startIndex)
 	generateMaze(maze, startIndex)
 
-	# while len(onesList) < 20:
-
-	# 	randIndex = random.randint(0,len(onesList)-1)
-	# 	nextIndex = onesList[randIndex]
-	# 	nextIndex = chooseNextIndex(maze, nextIndex)
-	# 	maze[nextIndex[0]][nextIndex[1]] = 1
-	# 	onesList.append(nextIndex)
-	# 	generateMaze(maze, nextIndex)
-
-	for row in maze:
-		print row
-
-	# print 
-	# print onesList
-
 main()
+for row in maze:
+	print row
+
+print 
+print openList
 

@@ -1,7 +1,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void clearCell(int maze[][32], int rowNum, int colNum) {
+struct cellsData {
+	int *cells;
+	int size;
+	int length;
+};
+
+int maze[8][32] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+				   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+				   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+				   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+				   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+				   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+				   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+				   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+
+void clearCell(int maze[8][32], int rowNum, int colNum) {
 
 	maze[rowNum][colNum] = 0;
 }
@@ -10,14 +25,14 @@ void addToCells(struct cellsData *cellsData1, int *index) {
 
 	for (int i = 0; i < cellsData1->size; i++) {
 		if (cellsData1->cells[i] == 0) {
-			cellsData1->cells[i] = index;
+			cellsData1->cells[i] = *index;
 			free(index);
 			cellsData1->length++;
 		}
 	}
 }
 
-void addSurroundingCells(int maze[][32], int numRows, int numCols, struct cellsData *cellsData1, int rowNum, int colNum) {
+void addSurroundingCells(int maze[8][32], int numRows, int numCols, struct cellsData *cellsData1, int rowNum, int colNum) {
 
 	int *upIndex = (int *)calloc(2, sizeof(int));
 	int *downIndex = (int *)calloc(2, sizeof(int));
@@ -62,7 +77,7 @@ int checkEmpty(int *cells) {
 	return 1;
 }
 
-int checkAdjacency(int maze[][32], int numRows, int numCols, int rowNum, int colNum) {
+int checkAdjacency(int maze[8][32], int numRows, int numCols, int rowNum, int colNum) {
 
 	int checks = 0;
 
@@ -76,24 +91,18 @@ int checkAdjacency(int maze[][32], int numRows, int numCols, int rowNum, int col
 	return 0;
 }
 
-void generateMaze(int maze[][32]) {
-
-	struct cellsData {
-		int *cells;
-		int size;
-		int length;
-	};
-
-	int numRows = sizeof(maze)/sizeof(maze[0]);
-	int numCols = sizeof(maze[0])/sizeof(maze[0][0]);
-
-	// int numRows = 8;
-	// int numCols = 32;
+void generateMaze(int maze[8][32]) {
 
 	struct cellsData *cellsData1 = (struct cellsData*) malloc(sizeof(struct cellsData));
 	cellsData1->cells = (int *) calloc(1, sizeof(int));
-	cellsData1->size = sizeof(maze);
+	cellsData1->size = sizeof(maze[8][32]);
 	cellsData1->length = 0;
+
+	// int numRows = sizeof(maze)/sizeof(maze[0]);
+	// int numCols = sizeof(maze[0])/sizeof(maze[0][0]);
+
+	int numRows = 8;
+	int numCols = 32;
 
 	// Choose starting cell
 	int startRow = rand() % numRows;
@@ -105,7 +114,13 @@ void generateMaze(int maze[][32]) {
 
 	do {
 		int randomIndex = rand() % cellsData1->length;
-		int randomCell[] = cellsData1->cells[randomIndex];
+		int randomCell[2] = {cellsData1->cells[randomIndex]};
+
+		// Copy index from list of cells into randomCell
+
+		// for (int i = 0; i < 2; i++) {
+		// 	randomCell[i] = cellsData1->cells[randomIndex[i]];
+		// }
 		
 		if (checkAdjacency(maze, numRows, numCols, randomCell[0], randomCell[1])) {
 			maze[randomCell[0]][randomCell[1]] = 0;
@@ -125,15 +140,6 @@ void generateMaze(int maze[][32]) {
 }
 
 int main() {
-
-	int maze[8][32] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-					   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-					   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-					   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-					   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-					   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-					   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-					   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
 	generateMaze(maze);
 

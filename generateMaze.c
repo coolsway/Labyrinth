@@ -36,16 +36,15 @@ int checkAdjacency(int maze[8][32], int numRows, int numCols, int rowNum, int co
 
 void addToCells(struct cellsData *cellsData1, int *index) {
 
-	int size = cellsData1->length;
+	int size = cellsData1->length + 1;
 
-	for (int i = 0; i < size; i++) {
-		if (cellsData1->cells[i][0] == 999 && cellsData1->cells[i][1] == 999) {
-			cellsData1->cells[i][0] = index[0];
-			cellsData1->cells[i][1] = index[1];
-			cellsData1->length++;
-			break;
-		}
-	}
+	cellsData1->cells[size - 1][0] = index[0];
+	cellsData1->cells[size - 1][1] = index[1];
+	cellsData1->length++;
+
+	printf(" (%d, %d) ", index[0], index[1]);
+
+
 }
 
 void addSurroundingCells(int maze[8][32], int numRows, int numCols, struct cellsData *data, int rowNum, int colNum) {
@@ -93,7 +92,7 @@ void generateMaze(int maze[8][32]) {
 
 	struct cellsData *data = (struct cellsData*) malloc(sizeof(struct cellsData));
 	data->cells = (int**) malloc(250*sizeof(int));
-	data->length = 1;
+	data->length = 0;
 
 	for (int i = 0; i < 250; i++) {
 		data->cells[i] = (int*)calloc(2,sizeof(int));
@@ -105,50 +104,51 @@ void generateMaze(int maze[8][32]) {
 	int numCols = 32;
 
 	// Choose starting cell
-	int startRow = (rand() % (numRows-1)) + 1;
-	int startCol = (rand() % (numCols-1)) + 1;
+	int startRow = (rand() % (numRows-2)) + 1;
+	int startCol = (rand() % (numCols-2)) + 1;
 
-	printf("%d %d\n", startRow, startCol);
+	printf("START: %d %d\n", startRow, startCol);
+	printf("ADDED:");
 
 	clearCell(maze,startRow,startCol);
 	addSurroundingCells(maze, numRows, numCols, data, startRow, startCol);
 
-	while (data->length > 0) {
-		printf("Before: %d\n", data->length);
+	printf("\n\n");
 
-		int randomIndex = rand() % data->length;
+	int *temp;
+
+	while (data->length > 0) {
+		//printf("Before: %d\n", data->length);
+
+		int randomIndex = rand() % (data->length);
 		int *randomCell = (int *) calloc(2, sizeof(int));
 		randomCell[0] =  data->cells[randomIndex][0];
 		randomCell[1] =  data->cells[randomIndex][1];
+
+		data->cells[randomIndex][0] = data->cells[data->length - 1][0];
+		data->cells[randomIndex][1] = data->cells[data->length - 1][1];
+
+		printf("RANDOM SELECTION: %d %d\n", randomCell[0], randomCell[1]);
 		
 		if (checkAdjacency(maze, numRows, numCols, randomCell[0], randomCell[1]) == 1) {
+			printf("CLEARED\n");
+			printf("ADDED:");
 			clearCell(maze, randomCell[0], randomCell[1]);
-			// printf("clear\n");
 			addSurroundingCells(maze, numRows, numCols, data, randomCell[0], randomCell[1]);
+			printf("\n\n");
+		}else{
+			printf("NOT CLEARED\n\n");
 		}
 
-		printf("Mid: %d\n", data->length);
-		for (int i = 0; i < 2; i++) {
-			printf("%d ", randomCell[i]);
-		}
-		printf("\n");
+		data->cells[data->length - 1][0] = 999;
+		data->cells[data->length - 1][1] = 999;
+		data->length--;
 
-		// Remove cell from list of cells
-		int size = data->length;
-
-		for (int i = 0; i < size; i++) {
-			if (data->cells[i][0] == randomCell[0] && data->cells[i][1] == randomCell[1]) {
-				data->cells[i][0] = 999;
-				data->cells[i][1] = 999;
-				data->length--;
-				break;
-			}
-		}
-
-		printf("After: %d\n\n", data->length);
-
-		free(randomCell);
+		temp = randomCell;
+		//free(randomCell);
 	}
+
+	printf("FINAL RANDOM SELECTION: %d %d\n", temp[0], temp[1]);
 
 	free(data->cells);
 	free(data);

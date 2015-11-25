@@ -44,7 +44,6 @@ void addToCells(struct cellsData *cellsData1, int *index) {
 
 	printf(" (%d, %d) ", index[0], index[1]);
 
-
 }
 
 void addSurroundingCells(int maze[8][32], int numRows, int numCols, struct cellsData *data, int rowNum, int colNum) {
@@ -125,30 +124,47 @@ void generateMaze(int maze[8][32]) {
 		randomCell[0] =  data->cells[randomIndex][0];
 		randomCell[1] =  data->cells[randomIndex][1];
 
-		data->cells[randomIndex][0] = data->cells[data->length - 1][0];
-		data->cells[randomIndex][1] = data->cells[data->length - 1][1];
-
 		printf("RANDOM SELECTION: %d %d\n", randomCell[0], randomCell[1]);
 		
 		if (checkAdjacency(maze, numRows, numCols, randomCell[0], randomCell[1]) == 1) {
 			printf("CLEARED\n");
 			printf("ADDED:");
+
 			clearCell(maze, randomCell[0], randomCell[1]);
 			addSurroundingCells(maze, numRows, numCols, data, randomCell[0], randomCell[1]);
-			printf("\n\n");
+
+			printf("\nDUMP:");
+
+			for (int k = 0; k < data->length; k++){
+				printf("(%d, %d) ", data->cells[k][0], data->cells[k][1]);
+			}
+
+			printf("\nLENGTH: %d\n", data->length);
 		}else{
-			printf("NOT CLEARED\n\n");
+			printf("NOT CLEARED\n");
+			printf("DUMP:");
+
+			for (int k = 0; k < data->length; k++){
+				printf("(%d, %d) ", data->cells[k][0], data->cells[k][1]);
+			}
+
+			printf("\nLENGTH: %d\n", data->length);
 		}
+
+		data->cells[randomIndex][0] = data->cells[data->length - 1][0];
+		data->cells[randomIndex][1] = data->cells[data->length - 1][1];
 
 		data->cells[data->length - 1][0] = 999;
 		data->cells[data->length - 1][1] = 999;
 		data->length--;
 
+		printf("LENGTH AFTER DELETION: %d\n\n", data->length);
+
 		temp = randomCell;
 		//free(randomCell);
 	}
 
-	printf("FINAL RANDOM SELECTION: %d %d\n", temp[0], temp[1]);
+	printf("FINAL RANDOM SELECTION: %d %d\n\n", temp[0], temp[1]);
 
 	free(data->cells);
 	free(data);

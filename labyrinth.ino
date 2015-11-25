@@ -31,12 +31,12 @@ char	rgBMPBall[] = {
 
 int maze[][32] = {
   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1},
-  {1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+  {1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
@@ -105,6 +105,13 @@ void DeviceInit()
 
   fClearOled = true;
 
+}
+
+int *ballLocation(int x, int y){
+  int *coord = (int*)malloc(2*sizeof(int));
+  coord[0] = x/4;
+  coord[1] = y/4;
+  return coord;
 }
 
 char *createBMP (int width, int height, int **data){
@@ -229,6 +236,9 @@ void Labyrinth() {
   OrbitOledPutBmp(cBallWidth, cBallHeight, rgBMPBall);
 
   OrbitOledUpdate();
+  
+  int upStopped = 0;
+  int leftStopped = 0;
 
   while(1) {
 
@@ -240,71 +250,131 @@ void Labyrinth() {
 
     dataX = (rgchReadAccl[2] << 8) | rgchReadAccl[1];
     dataY = (rgchReadAcclY[2] << 8) | rgchReadAcclY[1];
+    
+    int *storage = ballLocation(xcoBallCur, ycoBallCur);
 
     if(dataX < 0 && dataX < xDirThreshNeg) {
-      fDir = true;
-
-      if(xcoBallCur >= ccolOledMax) {
-        xcoBallCur = 0;
-
-        OrbitOledClear();
+      
+      leftStopped = 0;
+      
+      int condition;
+      
+      if (upStopped == 1){
+        condition = maze[storage[1]+1][storage[0]+1];
+      }else{
+        condition = maze[storage[1]][storage[0]+1];
       }
-
-      else {
-        xcoBallCur++;
+      
+      if (condition==1){
+        
+      }else{
+        fDir = true;
+  
+        if(xcoBallCur >= ccolOledMax) {
+          xcoBallCur = 0;
+  
+          OrbitOledClear();
+        }
+  
+        else {
+          xcoBallCur++;
+        }
+  
+        BallRight(xcoBallCur, ycoBallCur);
       }
-
-      BallRight(xcoBallCur, ycoBallCur);
     }
 
     else if(dataX > 0 && dataX > xDirThreshPos) {
-      fDir = false;
-
-      if(xcoBallCur <= 0) {
-        xcoBallCur = ccolOledMax;
-
-        OrbitOledClear();
+      
+      int condition;
+      
+      if (upStopped == 1){
+        condition = maze[storage[1]+1][storage[0]];
+      }else{
+        condition = maze[storage[1]][storage[0]];
       }
-
-      else {
-        xcoBallCur--;
+      
+      if (condition==1){
+        leftStopped = 1;
+      }else{
+        fDir = false;
+  
+        if(xcoBallCur <= 0) {
+          xcoBallCur = ccolOledMax;
+  
+          OrbitOledClear();
+        }
+  
+        else {
+          xcoBallCur--;
+        }
+  
+        BallLeft(xcoBallCur, ycoBallCur);
       }
-
-      BallLeft(xcoBallCur, ycoBallCur);
     }
     
     else if(dataY > 0 && dataY > yDirThreshPos) {
-      fDirY = true;
+      upStopped = 0;
       
-      if (ycoBallCur >= crowOledMax-4){
-        ycoBallCur = 0;
-        
-        OrbitOledClear();
+      int condition;
+      
+      if (leftStopped == 1){
+        condition = maze[storage[1]+1][storage[0]+1];
       }else{
-        ycoBallCur++;
+        condition = maze[storage[1]+1][storage[0]];
       }
       
-      BallDown(xcoBallCur, ycoBallCur);
+      if (condition==1){
+      }else{
+        fDirY = true;
+        
+        if (ycoBallCur >= crowOledMax-4){
+          ycoBallCur = 0;
+          
+          OrbitOledClear();
+        }else{
+          ycoBallCur++;
+        }
+        
+        BallDown(xcoBallCur, ycoBallCur);
+      }
     }
     
     else if(dataY < 0 && dataY < yDirThreshPos) {
-      fDirY = false;
       
-      if(ycoBallCur <= 0) {
-        ycoBallCur = crowOledMax - 4;
-
-        OrbitOledClear();
+      int condition;
+      
+      if (leftStopped == 1){
+        condition = maze[storage[1]][storage[0]+1];
       }else{
-        ycoBallCur--;
+        condition = maze[storage[1]][storage[0]];
       }
-
-      BallUp(xcoBallCur, ycoBallCur);
+      
+      if (condition==1){
+        upStopped = 1;
+      }else{
+        fDirY = false;
+        
+        if(ycoBallCur <= 0) {
+          ycoBallCur = crowOledMax - 4;
+  
+          OrbitOledClear();
+        }else{
+          ycoBallCur--;
+        }
+  
+        BallUp(xcoBallCur, ycoBallCur);
+      }
     }
 
     else {
       BallStop(xcoBallCur, ycoBallCur, fDir);
     }
+    
+    free(storage);
   }
+  
+  
 }
 
 void BallRight(int xcoUpdate, int ycoUpdate) {

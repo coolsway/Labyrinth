@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 struct cellsData {
-
 	int **cells;
 	int length;
 };
@@ -17,70 +17,8 @@ int maze[8][32] = {{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 
 				   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
 
 void clearCell(int maze[8][32], int rowNum, int colNum) {
-
 	maze[rowNum][colNum] = 0;
 }
-
-void addToCells(struct cellsData *cellsData1, int *index) {
-
-	for (int i = 0; i < cellsData1->length; i++) {
-		if (cellsData1->cells[i][0] == 999 && cellsData1->cells[i][1] == 999) {
-			cellsData1->cells[i][0] = index[0];
-			cellsData1->cells[i][1] = index[1];
-			free(index);
-			cellsData1->length++;
-		}
-	}
-}
-
-void addSurroundingCells(int maze[8][32], int numRows, int numCols, struct cellsData *cellsData1, int rowNum, int colNum) {
-
-	int *upIndex = (int *)calloc(2, sizeof(int));
-	int *downIndex = (int *)calloc(2, sizeof(int));
-	int *leftIndex = (int *)calloc(2, sizeof(int));
-	int *rightIndex = (int *)calloc(2, sizeof(int));
-
-	// UP
-	if (rowNum > 1) {
-		upIndex[0] = rowNum-1;
-		upIndex[1] = colNum;
-		addToCells(cellsData1, upIndex);
-	}
-
-	// DOWN
-	if (rowNum < numRows-2) {
-		downIndex[0] = rowNum+1;
-		downIndex[1] = colNum;
-		addToCells(cellsData1, downIndex);
-	}
-
-	// LEFT
-	if (colNum > 1) {
-		leftIndex[0] = rowNum-1;
-		leftIndex[1] = colNum;
-		addToCells(cellsData1, leftIndex);
-	}
-
-	// RIGHT
-	if (colNum < numCols-2) {
-		rightIndex[0] = rowNum+1;
-		rightIndex[1] = colNum;
-		addToCells(cellsData1, rightIndex);
-	}
-	free(upIndex);
-	free(downIndex);
-	free(leftIndex);
-	free(rightIndex);
-}
-
-// int checkEmpty(int *cells) {
-
-// 	for (int i = 0; i < sizeof(cells)/sizeof(cells[0]); i++) {
-// 		if (cells[i] != 0) return 0;
-// 	}
-
-// 	return 1;
-// }
 
 int checkAdjacency(int maze[8][32], int numRows, int numCols, int rowNum, int colNum) {
 
@@ -96,71 +34,129 @@ int checkAdjacency(int maze[8][32], int numRows, int numCols, int rowNum, int co
 	return 0;
 }
 
-void generateMaze(int maze[8][32]) {
+void addToCells(struct cellsData *cellsData1, int *index) {
 
-	struct cellsData *cellsData1 = (struct cellsData*) malloc(sizeof(struct cellsData));
-	cellsData1->cells = (int **) malloc(250*sizeof(int));		// Upper bound
-	cellsData1->length = 1;	
+	int size = cellsData1->length;
 
-	// Set all values in the list of cells to 999
+	for (int i = 0; i < size; i++) {
+		if (cellsData1->cells[i][0] == 999 && cellsData1->cells[i][1] == 999) {
+			cellsData1->cells[i][0] = index[0];
+			cellsData1->cells[i][1] = index[1];
+			cellsData1->length++;
+			break;
+		}
+	}
+}
 
-	for (int i = 0; i < sizeof(cellsData1->cells)/sizeof(int); i++) {
-		cellsData1->cells[i][0] = 999;
-		cellsData1->cells[i][1] = 999;
+void addSurroundingCells(int maze[8][32], int numRows, int numCols, struct cellsData *data, int rowNum, int colNum) {
+
+	int *upIndex = (int *)calloc(2, sizeof(int));
+	int *downIndex = (int *)calloc(2, sizeof(int));
+	int *leftIndex = (int *)calloc(2, sizeof(int));
+	int *rightIndex = (int *)calloc(2, sizeof(int));
+
+	// UP
+	if (rowNum > 1) {
+		upIndex[0] = rowNum-1;
+		upIndex[1] = colNum;
+		addToCells(data, upIndex);
 	}
 
-	// int numRows = sizeof(maze)/sizeof(maze[0]);
-	// int numCols = sizeof(maze[0])/sizeof(maze[0][0]);
+	// DOWN
+	if (rowNum < numRows-2) {
+		downIndex[0] = rowNum+1;
+		downIndex[1] = colNum;
+		addToCells(data, downIndex);
+	}
+
+	// LEFT
+	if (colNum > 1) {
+		leftIndex[0] = rowNum;
+		leftIndex[1] = colNum-1;
+		addToCells(data, leftIndex);
+	}
+
+	// RIGHT
+	if (colNum < numCols-2) {
+		rightIndex[0] = rowNum;
+		rightIndex[1] = colNum+1;
+		addToCells(data, rightIndex);
+	}
+
+	free(upIndex);
+	free(downIndex);
+	free(leftIndex);
+	free(rightIndex);
+}
+
+void generateMaze(int maze[8][32]) {
+
+	struct cellsData *data = (struct cellsData*) malloc(sizeof(struct cellsData));
+	data->cells = (int**) malloc(250*sizeof(int));
+	data->length = 1;
+
+	for (int i = 0; i < 250; i++) {
+		data->cells[i] = (int*)calloc(2,sizeof(int));
+		data->cells[i][0] = 999;
+		data->cells[i][1] = 999;
+	}
 
 	int numRows = 8;
 	int numCols = 32;
 
 	// Choose starting cell
-	int startRow = rand() % numRows;
-	int startCol = rand() % numCols;
+	int startRow = (rand() % (numRows-1)) + 1;
+	int startCol = (rand() % (numCols-1)) + 1;
 
-	maze[startRow][startCol] = 0;
-	// clearCell(maze, startRow, starteCol);
-	addSurroundingCells(maze, numRows, numCols, cellsData1, startRow, startCol);
+	printf("%d %d\n", startRow, startCol);
 
-	do {
-		int randomIndex = rand() % cellsData1->length;
+	clearCell(maze,startRow,startCol);
+	addSurroundingCells(maze, numRows, numCols, data, startRow, startCol);
+
+	while (data->length > 0) {
+		printf("Before: %d\n", data->length);
+
+		int randomIndex = rand() % data->length;
 		int *randomCell = (int *) calloc(2, sizeof(int));
-		randomCell[0] =  cellsData1->cells[randomIndex][0];
-		randomCell[1] =  cellsData1->cells[randomIndex][1];
-
-		// Copy index from list of cells into randomCell
-
-		// for (int i = 0; i < 2; i++) {
-		// 	randomCell[i] = cellsData1->cells[randomIndex[i]];
-		// }
+		randomCell[0] =  data->cells[randomIndex][0];
+		randomCell[1] =  data->cells[randomIndex][1];
 		
-		if (checkAdjacency(maze, numRows, numCols, randomCell[0], randomCell[1])) {
-			maze[randomCell[0]][randomCell[1]] = 0;
-			// clearCell(maze, randomCell[0], randomCell[1]);
-			addSurroundingCells(maze, numRows, numCols, cellsData1, randomCell[0], randomCell[1]);
+		if (checkAdjacency(maze, numRows, numCols, randomCell[0], randomCell[1]) == 1) {
+			clearCell(maze, randomCell[0], randomCell[1]);
+			// printf("clear\n");
+			addSurroundingCells(maze, numRows, numCols, data, randomCell[0], randomCell[1]);
 		}
+
+		printf("Mid: %d\n", data->length);
+		for (int i = 0; i < 2; i++) {
+			printf("%d ", randomCell[i]);
+		}
+		printf("\n");
 
 		// Remove cell from list of cells
-		for (int i = 0; i < cellsData1->length; i++) {
-			if (cellsData1->cells[i][0] == randomCell[0] && cellsData1->cells[i][1] == randomCell[1]) {
-				cellsData1->cells[i][0] = 999;		// Arbitrary value which will not be used
-				cellsData1->cells[i][1] = 999;
-				cellsData1->length--;
+		int size = data->length;
+
+		for (int i = 0; i < size; i++) {
+			if (data->cells[i][0] == randomCell[0] && data->cells[i][1] == randomCell[1]) {
+				data->cells[i][0] = 999;
+				data->cells[i][1] = 999;
+				data->length--;
+				break;
 			}
 		}
+
+		printf("After: %d\n\n", data->length);
+
 		free(randomCell);
+	}
 
-	} while (cellsData1->length > 0);
-
-	// At end of algorithm, free memory
-	free(cellsData1->cells);
-	free(cellsData1);
+	free(data->cells);
+	free(data);
 }
 
 int main() {
 
-	printf("test\n");
+	srand(time(NULL));
 
 	generateMaze(maze);
 
@@ -170,5 +166,4 @@ int main() {
 		}
 		printf("\n");
 	}
-	printf("test2\n");
 }

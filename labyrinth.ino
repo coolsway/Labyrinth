@@ -11,15 +11,15 @@ extern "C" {
 
 #define RED_LED   GPIO_PIN_1
 #define BLUE_LED  GPIO_PIN_2
-#define GREEN_LED GPIO_PIN_3
+//#define GREEN_LED GPIO_PIN_3
 
 extern int xchOledMax; 
 extern int ychOledMax; 
 
 bool	fClearOled;
 
-int	xcoBallStart 	= 64;
-int	ycoBallStart	= 16;
+int	xcoBallStart 	= 4;
+int	ycoBallStart	= 4;
 
 int	cBallWidth 	= 4;
 int	cBallHeight 	= 4;
@@ -29,14 +29,14 @@ char	rgBMPBall[] = {
   0xFF, 0xFF
 };
 
-int maze[][32] = {
+int   maze[][32] = {
   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-  {1, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+  {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
   {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
 };
 
@@ -52,14 +52,162 @@ void BallStop(int xcoUpdate, int ycoUpdate, bool fDir);
 char I2CGenTransmit(char * pbData, int cSize, bool fRW, char bAddr);
 bool I2CGenIsNotIdle();
 
+// Random Maze Generation
+
+struct cellsData {
+  int **cells;
+  int length;
+};
+
+void clearCell(int maze[8][32], int rowNum, int colNum) {
+  maze[rowNum][colNum] = 0;
+}
+
+int checkAdjacency(int maze[8][32], int numRows, int numCols, int rowNum, int colNum) {
+
+  int checks = 0;
+
+  if (rowNum > 0 && maze[rowNum-1][colNum] == 0) checks++;
+  if (rowNum < numRows-1 && maze[rowNum+1][colNum] == 0) checks++;
+  if (colNum > 0 && maze[rowNum][colNum-1] == 0) checks++;
+  if (colNum < numCols-1 && maze[rowNum][colNum+1] == 0) checks++;
+
+  if (checks < 2) return 1;
+
+  return 0;
+}
+
+void addToCells(struct cellsData *cellsData1, int *index) {
+
+  int size = cellsData1->length + 1;
+
+  cellsData1->cells[size - 1][0] = index[0];
+  cellsData1->cells[size - 1][1] = index[1];
+  cellsData1->length++;
+
+}
+
+void addSurroundingCells(int maze[8][32], int numRows, int numCols, struct cellsData *data, int rowNum, int colNum) {
+
+  int *upIndex = (int *)calloc(2, sizeof(int));
+  int *downIndex = (int *)calloc(2, sizeof(int));
+  int *leftIndex = (int *)calloc(2, sizeof(int));
+  int *rightIndex = (int *)calloc(2, sizeof(int));
+
+  // UP
+  if (rowNum > 1) {
+    upIndex[0] = rowNum-1;
+    upIndex[1] = colNum;
+    addToCells(data, upIndex);
+  }
+
+  // DOWN
+  if (rowNum < numRows-2) {
+    downIndex[0] = rowNum+1;
+    downIndex[1] = colNum;
+    addToCells(data, downIndex);
+  }
+
+  // LEFT
+  if (colNum > 1) {
+    leftIndex[0] = rowNum;
+    leftIndex[1] = colNum-1;
+    addToCells(data, leftIndex);
+  }
+
+  // RIGHT
+  if (colNum < numCols-2) {
+    rightIndex[0] = rowNum;
+    rightIndex[1] = colNum+1;
+    addToCells(data, rightIndex);
+  }
+
+  free(upIndex);
+  free(downIndex);
+  free(leftIndex);
+  free(rightIndex);
+}
+
+void generateMaze(int maze[8][32]) {
+
+  struct cellsData *data = (struct cellsData*) malloc(sizeof(struct cellsData));
+  data->cells = (int**) malloc(250*sizeof(int));
+  data->length = 0;
+
+  for (int i = 0; i < 250; i++) {
+    data->cells[i] = (int*)calloc(2,sizeof(int));
+    data->cells[i][0] = 999;
+    data->cells[i][1] = 999;
+  }
+
+  int numRows = 8;
+  int numCols = 32;
+
+  // Choose starting cell
+  int startRow = random(1,numRows);
+  int startCol = random(1,numCols);
+
+  clearCell(maze,startRow,startCol);
+  addSurroundingCells(maze, numRows, numCols, data, startRow, startCol);
+
+  int *temp;
+  
+  while (data->length > 0) {
+          
+    int randomIndex = random(0,data->length);
+    int *randomCell = (int *) calloc(2, sizeof(int));
+    randomCell[0] =  data->cells[randomIndex][0];
+    randomCell[1] =  data->cells[randomIndex][1];
+		
+    if (checkAdjacency(maze, numRows, numCols, randomCell[0], randomCell[1]) == 1) {
+      clearCell(maze, randomCell[0], randomCell[1]);
+      addSurroundingCells(maze, numRows, numCols, data, randomCell[0], randomCell[1]);
+    }
+
+    data->cells[randomIndex][0] = data->cells[data->length - 1][0];
+    data->cells[randomIndex][1] = data->cells[data->length - 1][1];
+
+    data->cells[data->length - 1][0] = 999;
+    data->cells[data->length - 1][1] = 999;
+    data->length--;
+
+    temp = randomCell;
+    free(randomCell);
+  }
+
+  //printf("FINAL RANDOM SELECTION: %d %d\n\n", temp[0], temp[1]);
+
+  free(data->cells);
+  free(data);
+  
+  // Top Left Start
+  
+  maze[1][1] = 0;
+  maze[1][2] = 0;
+  maze[2][2] = 0;
+  maze[2][1] = 0;
+  
+  // Bottom Right End
+  
+  maze[6][30] = 0;
+  maze[5][30] = 0;
+  maze[6][29] = 0;
+  maze[5][29] = 0;
+
+  Labyrinth();
+}
+
 void setup()
 {
   DeviceInit();
+  pinMode(GREEN_LED, OUTPUT);
+  //digitalWrite(GREEN_LED, HIGH);
 }
 
 void loop()
 {
-  Labyrinth();
+  randomSeed(analogRead(A1));
+  generateMaze(maze);
 }
 
 void DeviceInit()
@@ -178,12 +326,14 @@ int** expandMaze(int maze[][32]){
 int mazeWidth = 128;
 int mazeHeight = 32;
 
-char *finalMaze = createBMP(128,32,expandMaze(maze));
+char *finalMaze;
 
 void Labyrinth() {
 
   short	dataX;
   short dataY;
+  
+  finalMaze = createBMP(128,32,expandMaze(maze));
 
   char 	chPwrCtlReg = 0x2D;
   char 	chX0Addr = 0x32;
@@ -252,6 +402,18 @@ void Labyrinth() {
     dataY = (rgchReadAcclY[2] << 8) | rgchReadAcclY[1];
     
     int *storage = ballLocation(xcoBallCur, ycoBallCur);
+    
+    // Winning Condition
+    
+    if (storage[0] == 30 && storage[1] == 6){
+        for (int i = 0; i < 3; i++) {
+          digitalWrite(GREEN_LED, HIGH);
+          delay(300);
+          digitalWrite(GREEN_LED, LOW);
+          delay(300);
+        }
+      break;
+    }
 
     if(dataX < 0 && dataX < xDirThreshNeg) {
       
@@ -269,16 +431,8 @@ void Labyrinth() {
         
       }else{
         fDir = true;
-  
-        if(xcoBallCur >= ccolOledMax) {
-          xcoBallCur = 0;
-  
-          OrbitOledClear();
-        }
-  
-        else {
-          xcoBallCur++;
-        }
+ 
+        xcoBallCur++;
   
         BallRight(xcoBallCur, ycoBallCur);
       }
@@ -299,15 +453,7 @@ void Labyrinth() {
       }else{
         fDir = false;
   
-        if(xcoBallCur <= 0) {
-          xcoBallCur = ccolOledMax;
-  
-          OrbitOledClear();
-        }
-  
-        else {
-          xcoBallCur--;
-        }
+        xcoBallCur--;
   
         BallLeft(xcoBallCur, ycoBallCur);
       }
@@ -328,13 +474,7 @@ void Labyrinth() {
       }else{
         fDirY = true;
         
-        if (ycoBallCur >= crowOledMax-4){
-          ycoBallCur = 0;
-          
-          OrbitOledClear();
-        }else{
-          ycoBallCur++;
-        }
+        ycoBallCur++;
         
         BallDown(xcoBallCur, ycoBallCur);
       }
@@ -354,14 +494,8 @@ void Labyrinth() {
         upStopped = 1;
       }else{
         fDirY = false;
-        
-        if(ycoBallCur <= 0) {
-          ycoBallCur = crowOledMax - 4;
-  
-          OrbitOledClear();
-        }else{
-          ycoBallCur--;
-        }
+       
+        ycoBallCur--;
   
         BallUp(xcoBallCur, ycoBallCur);
       }

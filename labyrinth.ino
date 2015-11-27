@@ -400,8 +400,7 @@ void Labyrinth() {
     
     // Winning Condition
     
-    if (storage[0] == 30 && storage[1] == 6) {
-      
+    if (storage[0] == 30 && storage[1] == 6){
       digitalWrite(RED_LED, HIGH);
       delay(300);
       digitalWrite(RED_LED, LOW);

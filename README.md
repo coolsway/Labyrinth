@@ -1,4 +1,4 @@
-# Labyrinth
+# About
 
 Labyrinth is a randomized, uniquely solvable maze game for the [Orbit BoosterPack](http://store.digilentinc.com/orbit-booster-pack-i-o-add-on-board-designed-for-the-tiva-launchpad/) shield and the [Tiva LaunchPad](http://www.ti.com/ww/en/launchpad/launchpads-connected-ek-tm4c123gxl.html) microcontroller.
 

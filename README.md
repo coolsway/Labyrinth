@@ -1,5 +1,4 @@
 # About
-SE101 Lab Project -> Procedurally generated maze game for Tiva LaunchPad
 
 Labyrinth is a procedurally generated, uniquely solvable maze game for the [Orbit BoosterPack](http://store.digilentinc.com/orbit-booster-pack-i-o-add-on-board-designed-for-the-tiva-launchpad/) shield and the [Tiva LaunchPad](http://www.ti.com/ww/en/launchpad/launchpads-connected-ek-tm4c123gxl.html) microcontroller.
 
